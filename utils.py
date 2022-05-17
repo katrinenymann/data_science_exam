@@ -13,6 +13,9 @@ class DataLoader():
         self.data = pd.read_csv(self.path)
 
     def preprocess_data(self):
+        # Remove the other category in Gender as it only has one observation
+        self.data.drop(self.data[self.data['gender'] == 'Other'].index, inplace = True)
+        
         # One-hot encode all categorical columns
         categorical_cols = ["gender",
                             "ever_married",
@@ -46,7 +49,10 @@ class DataLoader():
     def get_data_split(self):
         X = self.data.iloc[:,:-1]
         y = self.data.iloc[:,-1]
-        return train_test_split(X, y, test_size=0.20, random_state=2021)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=42)
+        # And validation data for ANN
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=42) # 0.25 x 0.8 = 0.2
+        return X_train, X_test, y_train, y_test, X_val, y_val
     
     # Oversampling to allow the algorithm to see more of the minority group while training
     def oversample(self, X_train, y_train):

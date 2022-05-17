@@ -1,0 +1,14 @@
+# modules
+dash_cytoscape
+dash
+interpret
+matplotlib
+requests
+pandas
+numpy
+gevent
+lime
+shap
+dice_ml
+tensorflow
+xgboost
