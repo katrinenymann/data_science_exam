@@ -146,11 +146,8 @@ class InterpretModel:
         prediction = model.predict(X_testing[start:end])[0]
         print(f"The {model} predicted: {prediction}")
 
-        if str(model) == "RandomForestClassifier()":
-            return shap.force_plot(explainer.expected_value[1], shap_values[1], X_testing[start:end]) # for values
-            
-        else: 
-            return shap.force_plot(explainer.expected_value, shap_values, X_testing[start:end]) # for values
+        return shap.force_plot(explainer.expected_value[1], shap_values[1], X_testing[start:end]) # for values
+
 
 
     def CF_method(self, model, X_testing, start, end, data):
