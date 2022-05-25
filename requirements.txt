@@ -9,6 +9,5 @@ numpy
 gevent
 lime
 shap
-dice_ml
 tensorflow
 xgboost

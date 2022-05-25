@@ -4,7 +4,7 @@ pd.set_option('display.max_columns', None)
 from sklearn.model_selection import train_test_split
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
-
+from collections import Counter
 from imblearn.over_sampling import SMOTE
 
 class DataLoader():
@@ -80,10 +80,18 @@ class DataLoader():
         y_over = pd.Series(y_np, name=y_train.name)
         return x_over, y_over
 
-    def SMOTE_oversample(self, X_train, y_train):
-        oversample = SMOTE()
-        X_train_resh, y_train_resh = oversample.fit_resample(X_train, y_train.ravel())
-        return  X_train_resh, y_train_resh
+    def under_oversample(self, X_train, y_train):
+        # instantiating over and under sampler
+        over = RandomOverSampler(sampling_strategy=0.5)
+        under = RandomUnderSampler(sampling_strategy=0.8)
+        # first performing oversampling to minority class
+        X_over, y_over = over.fit_resample(X_train, y_train)
+        print(f"Oversampled: {Counter(y_over)}")
+        # now to comine under sampling 
+        X_combined_sampling, y_combined_sampling = under.fit_resample(X_over, y_over)
+        print(f"Combined Random Sampling: {Counter(y_combined_sampling)}")
+
+        return  X_combined_sampling, y_combined_sampling
     
 
 from sklearn.metrics import confusion_matrix, accuracy_score
@@ -108,7 +116,6 @@ class Performance:
 from interpret.blackbox import LimeTabular
 from interpret import show
 import shap
-import dice_ml
 
 # We make a class for the interpretability
 class InterpretModel:
@@ -148,42 +155,4 @@ class InterpretModel:
 
         return shap.force_plot(explainer.expected_value[1], shap_values[1], X_testing[start:end]) # for values
 
-
-
-    def CF_method(self, model, X_testing, start, end, data):
-
-        # Dataset
-        data_dice = dice_ml.Data(dataframe=data, 
-                                # For perturbation strategy
-                                continuous_features=['age', 
-                                                    'avg_glucose_level',
-                                                    'bmi'], 
-                                outcome_name='stroke')
-        # Model
-        model_dice = dice_ml.Model(model=model, 
-                                backend="sklearn")
-        explainer = dice_ml.Dice(data_dice, 
-                                model_dice, 
-                                # Random sampling, genetic algorithm, kd-tree,...
-                                method="random")
-        # generate CF
-        input_datapoint = X_testing[start:end]
-        cf = explainer.generate_counterfactuals(input_datapoint, 
-                                  total_CFs=3, 
-                                  desired_class="opposite")   
-
-        features_to_vary=['avg_glucose_level',
-                        'bmi',
-                        'smoking_status_smokes']
-        permitted_range={'avg_glucose_level':[50,250],
-                        'bmi':[18, 35], 
-                        'smoking_status_smokes': ['0']} # only possible to change to non-smoker
-        # Now generating explanations using the new feature weights
-        cf = explainer.generate_counterfactuals(input_datapoint, 
-                                        total_CFs=3, 
-                                        desired_class="opposite",
-                                        permitted_range=permitted_range,
-                                        features_to_vary=features_to_vary)
-        # Visualize it
-        return cf.visualize_as_dataframe(show_only_changes=True)                
 
