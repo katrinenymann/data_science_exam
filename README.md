@@ -8,6 +8,7 @@ The exploration of the dataset can be found in the data_exploration notebook.
 The training of the models is in the analysis notebook.  
 
 The packages required to run the code are mentioned in the requirements.txt 
+The utils file contains all the functions created to run the notebooks. 
 
 
 
